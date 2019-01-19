@@ -41,21 +41,24 @@ pipeline {
             steps {
                 input 'Deploy to Production?'
                 milestone(1)
-                script {
-                    sh "ssh -i $key ec2-user@$prod_ip \"docker pull ryancmcrobie/train-schedule:${env.BUILD_NUMBER}\""
-                    try {
-                        sh "ssh -i $key ec2-user@$prod_ip \"docker stop train-schedule\""
-                        sh "ssh -i $key ec2-user@$prod_ip \"docker rm train-schedule\""
-                    } catch (err) {
-                        echo: 'caught error: $err'
-                    }
-                    sh "ssh -i $key ec2-user@$prod_ip \"docker run --restart always --name train-schedule -p 3000:3000 -d ryancmcrobie/train-schedule:${env.BUILD_NUMBER}\""
-                }
+                sshPublisher (
+                    failOnError: true,
+                    continueOnError: false,
+                    publishers: [
+                        sshPublisherDesc(
+                            configName: 'production',
+                            transfers: [
+                                sshTransfer(
+                                    execCommand: 'docker pull ryancmcrobie/train-schedule:${env.BUILD_NUMBER} && docker stop train-schedule && docker rm train-schedule && docker run --restart always --name train-schedule -p 3000:3000 -d ryancmcrobie/train-schedule:${env.BUILD_NUMBER}'
+                                )
+					        ]
+						)
+					]
+				)	
             }
         }
     }
 }
-
         
       
 
