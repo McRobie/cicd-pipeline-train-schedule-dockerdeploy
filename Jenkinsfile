@@ -49,12 +49,15 @@ pipeline {
                             configName: 'production',
                             transfers: [
                                 sshTransfer(
-                                    execCommand: 'docker pull ryancmcrobie/train-schedule:${env.BUILD_NUMBER} && docker stop train-schedule && docker rm train-schedule && docker run --restart always --name train-schedule -p 3000:3000 -d ryancmcrobie/train-schedule:${env.BUILD_NUMBER}'
+                                    execCommand: "docker pull ryancmcrobie/train-schedule:${env.BUILD_NUMBER}"
+				    execCommand: "docker stop train-schedule"
+				    execCommand: "docker rm train-schedule"
+				    execCommand: "docker run --restart always --name train-schedule -p 3000:3000 -d ryancmcrobie/train-schedule:${env.BUILD_NUMBER}"
                                 )
-					        ]
-						)
-					]
-				)	
+			    ]
+			)
+		    ]
+		)	
             }
         }
     }
