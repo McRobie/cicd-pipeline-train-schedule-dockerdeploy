@@ -42,14 +42,14 @@ pipeline {
                 input 'Deploy to Production?'
                 milestone(1)
                 script {
-                    sh "ssh -i ~/.ssh/mcrobie_key.pem ec2-user@$prod_ip \"docker pull ryancmcrobie/train-schedule:${env.BUILD_NUMBER}\""
+                    sh "ssh -i $key ec2-user@$prod_ip \"docker pull ryancmcrobie/train-schedule:${env.BUILD_NUMBER}\""
                     try {
-                        sh "ssh -i ~/.ssh/mcrobie_key.pem ec2-user@$prod_ip \"docker stop train-schedule\""
-                        sh "ssh -i ~/.ssh/mcrobie_key.pem ec2-user@$prod_ip \"docker rm train-schedule\""
+                        sh "ssh -i $key ec2-user@$prod_ip \"docker stop train-schedule\""
+                        sh "ssh -i $key ec2-user@$prod_ip \"docker rm train-schedule\""
                     } catch (err) {
                         echo: 'caught error: $err'
                     }
-                    sh "ssh -i ~/.ssh/mcrobie_key.pem ec2-user@$prod_ip \"docker run --restart always --name train-schedule -p 3000:3000 -d ryancmcrobie/train-schedule:${env.BUILD_NUMBER}\""
+                    sh "ssh -i $key ec2-user@$prod_ip \"docker run --restart always --name train-schedule -p 3000:3000 -d ryancmcrobie/train-schedule:${env.BUILD_NUMBER}\""
                 }
             }
         }
