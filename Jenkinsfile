@@ -41,27 +41,19 @@ pipeline {
             steps {
                 input 'Deploy to Production?'
                 milestone(1)
-                sshPublisher (
-                    failOnError: true,
-                    continueOnError: false,
-                    publishers: [
-                        sshPublisherDesc(
-                            configName: 'production',
-                            transfers: [
-                                sshTransfer(
-                                    execCommand: "docker pull ryancmcrobie/train-schedule:${env.BUILD_NUMBER}"
-				    execCommand: "docker stop train-schedule"
-				    execCommand: "docker rm train-schedule"
-				    execCommand: "docker run --restart always --name train-schedule -p 3000:3000 -d ryancmcrobie/train-schedule:${env.BUILD_NUMBER}"
-                                )
-			    ]
-			)
-		    ]
-		)	
+                withCredentials([$class: 'AmazonWebServicesCredentialsBinding'(credentialsId: 'ec2-user')]) {
+                    script {
+                        sh "ssh ec2-user@$prod_ip \"docker pull ryancmcrobie/train-schedule:${env.BUILD_NUMBER}\""
+                        try {
+                            sh "ssh ec2-user@$prod_ip \"docker stop train-schedule\""
+                            sh "ssh ec2-user@$prod_ip \"docker rm train-schedule\""
+                        } catch (err) {
+                            echo: 'caught error: $err'
+                        }
+                        sh "ssh ec2-user@$prod_ip \"docker run --restart always --name train-schedule -p 3000:3000 -d ryancmcrobie/train-schedule:${env.BUILD_NUMBER}\""
+                    }
+                }
             }
         }
     }
 }
-        
-      
-
