@@ -41,16 +41,16 @@ pipeline {
             steps {
                 input 'Deploy to Production?'
                 milestone(1)
-                withCredentials([$class: 'AmazonWebServicesCredentialsBinding'(credentialsId: 'ec2-user')]) {
+                withCredentials([usernamePassword(credentialsId: 'ec2-user', usernameVariable: 'USERNAME', passwordVariable: 'USERPASS')]) {
                     script {
-                        sh "ssh ec2-user@$prod_ip \"docker pull ryancmcrobie/train-schedule:${env.BUILD_NUMBER}\""
+                        sh "ssh -o StrictHostKeyChecking=no $USERNAME@$prod_ip \"docker pull ryancmcrobie/train-schedule:${env.BUILD_NUMBER}\""
                         try {
-                            sh "ssh ec2-user@$prod_ip \"docker stop train-schedule\""
-                            sh "ssh ec2-user@$prod_ip \"docker rm train-schedule\""
+                            sh "ssh -o StrictHostKeyChecking=no $USERNAME@$prod_ip \"docker stop train-schedule\""
+                            sh "ssh -o StrictHostKeyChecking=no $USERNAME@$prod_ip \"docker rm train-schedule\""
                         } catch (err) {
                             echo: 'caught error: $err'
                         }
-                        sh "ssh ec2-user@$prod_ip \"docker run --restart always --name train-schedule -p 3000:3000 -d ryancmcrobie/train-schedule:${env.BUILD_NUMBER}\""
+                        sh "ssh -o StrictHostKeyChecking=no $USERNAME@$prod_ip \"docker run --restart always --name train-schedule -p 3000:3000 -d ryancmcrobie/train-schedule:${env.BUILD_NUMBER}\""
                     }
                 }
             }
