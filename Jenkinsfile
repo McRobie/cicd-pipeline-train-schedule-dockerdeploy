@@ -41,7 +41,7 @@ pipeline {
             steps {
                 input 'Deploy to Production?'
                 milestone(1)
-                withCredentials([usernamePassword(credentialsId: 'webserver_login', usernameVariable: 'USERNAME', passwordVariable: 'USERPASS')]) {
+                withCredentials([sshagent(credentials: '7b1bc661-77fc-4b19-96ad-6c71d4aaf989')]) {
                     script {
                         sh "ssh -o StrictHostKeyChecking=no $USERNAME@$prod_ip \"docker pull ryancmcrobie/train-schedule:${env.BUILD_NUMBER}\""
                         try {
